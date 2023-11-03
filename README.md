@@ -1,13 +1,7 @@
 ## rd_route  
-[![Build Status](https://travis-ci.org/rodionovd/rd_route.svg?branch=master)](https://travis-ci.org/rodionovd/rd_route)  
-Replace (aka «hook» or «override» or «route») implementation of any C function in runtime. Works on OS X with Mach–O binaries.
-
-> Do not use this code. It can destroy everthing.
-> But if you do, I wish you a luck.
+Replace (aka «hook» or «override» or «route») implementation of any C function in runtime. Works on MacOS with Mach–O binaries.
   
-**NOTE**: `rd_route` **won't work on iOS**.  You should take a look at [`libevil`](https://github.com/landonf/libevil_patch) instead.  
-Aaand it won't work for you too [if you're targeting ARM64](https://github.com/landonf/libevil_patch/issues/1). Unfortunately I don't have a modern iOS device and thus unable to look into it, but maybe you do? 
-
+**NOTE**: `rd_route` **won't work on iOS**.
 
 ### Usage 
 
