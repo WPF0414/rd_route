@@ -50,6 +50,23 @@ int rd_route_byname(const char *function_name, const char *image_name, void *rep
  */
 int rd_duplicate_function(void *function, void **duplicate);
 
+/**
+ * Patch Memory at a Specified Address with New Bytes.
+ * @param  address   Pointer to the memory address where the patching will occur.
+ * @param  count     Number of bytes to be patched.
+ * @param  new_bytes Array of uint8_t containing the new bytes to replace the existing ones.
+ *
+ * @return int       Returns 0 if the memory patching is successful, or a non-zero value if it fails.
+ *
+ * @note             This function allows for patching a specified memory address with new bytes.
+ *                   It takes the target address, the count of bytes to patch, and an array of new bytes
+ *                   to replace the existing content at the specified memory location.
+ *                   The function returns 0 on success, and a non-zero value if the patching process fails.
+ *                   Additional details about the specific error conditions can be obtained through
+ *                   further documentation or source code analysis.
+ */
+int patch_memory(void *address, mach_msg_type_number_t count, uint8_t *new_bytes);
+
 #ifdef __cplusplus
 	}
 #endif

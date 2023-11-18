@@ -58,7 +58,6 @@ typedef struct rd_injection {
 static mach_vm_size_t _image_size(void *image, mach_vm_size_t image_slide, mach_vm_address_t *data_segment_offset);
 static kern_return_t  _remap_image(void *image,  mach_vm_size_t image_slide, mach_vm_address_t *new_location);
 static kern_return_t  _insert_jmp(void* where, void* to);
-static kern_return_t  _patch_memory(void *address, mach_msg_type_number_t count, uint8_t *new_bytes);
 static void*          _function_ptr_from_name(const char *function_name, const char *suggested_image_name);
 static void*          _function_ptr_within_image(const char *function_name, void *macho_image_header, uintptr_t vm_image_slide);
 
@@ -310,7 +309,7 @@ static kern_return_t _insert_jmp(void* where, void* to)
 	opcodes[1] = 0x25;
 	*((int*)&opcodes[2]) = 0;
 	*((uintptr_t*)&opcodes[6]) = (uintptr_t)to;
-	err = _patch_memory((void *)where, size_of_jump, opcodes);
+	err = patch_memory((void *)where, size_of_jump, opcodes);
 #elif defined(__aarch64__)
 	opcodes[0] = 0x49;
 	opcodes[1] = 0x00;
@@ -321,25 +320,25 @@ static kern_return_t _insert_jmp(void* where, void* to)
 	opcodes[6] = 0x1f;
 	opcodes[7] = 0xd6;
 	*((uintptr_t*)&opcodes[8]) = (uintptr_t)to;
-	err = _patch_memory((void *)where, size_of_jump, opcodes);
+	err = patch_memory((void *)where, size_of_jump, opcodes);
 #else
 	int offset = (int)(to - where - size_of_jump);
 	opcodes[0] = 0xE9;
 	*((int*)&opcodes[1]) = offset;
-	err = _patch_memory((void *)where, size_of_jump, opcodes);
+	err = patch_memory((void *)where, size_of_jump, opcodes);
 #endif
 
 	return (err);
 }
 
 
-static kern_return_t _patch_memory(void *address, mach_msg_type_number_t count, uint8_t *new_bytes)
+int patch_memory(void *address, mach_msg_type_number_t count, uint8_t *new_bytes)
 {
 	assert(address);
 	assert(count > 0);
 	assert(new_bytes);
 
-	kern_return_t kr = 0;
+	int kr = 0;
 	kr = mach_vm_protect(mach_task_self(), (mach_vm_address_t) address, (mach_vm_size_t) count, FALSE, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
     if (kr != KERN_SUCCESS) {
         RDErrorLog("mach_vm_protect() failed with error: 0x%x", kr);
