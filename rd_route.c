@@ -294,10 +294,12 @@ static kern_return_t _insert_jmp(void* where, void* to)
 	assert(to);
 	/**
 	 * We are going to use an absolute JMP instruction for x86_64
-	 * and a relative one for i386.
+	 * and a relative one for i386 and aarch64.
 	 */
-#if defined (__x86_64__) || defined(__aarch64__)
+#if defined (__x86_64__)
 	mach_msg_type_number_t size_of_jump = (sizeof(uintptr_t) * 2);
+#elif defined(__aarch64__)
+	mach_msg_type_number_t size_of_jump = 4;
 #else
 	mach_msg_type_number_t size_of_jump = (sizeof(int) + 1);
 #endif
@@ -311,15 +313,10 @@ static kern_return_t _insert_jmp(void* where, void* to)
 	*((uintptr_t*)&opcodes[6]) = (uintptr_t)to;
 	err = patch_memory((void *)where, size_of_jump, opcodes);
 #elif defined(__aarch64__)
-	opcodes[0] = 0x49;
-	opcodes[1] = 0x00;
-	opcodes[2] = 0x00;
-	opcodes[3] = 0x58;
-	opcodes[4] = 0x20;
-	opcodes[5] = 0x01;
-	opcodes[6] = 0x1f;
-	opcodes[7] = 0xd6;
-	*((uintptr_t*)&opcodes[8]) = (uintptr_t)to;
+	int32_t opcode = 0x14000000 | ((((int)(to - where)) >> 2) & 0x03FFFFFF);
+	for (size_t i = 0; i < size_of_jump; i++) {
+        opcodes[i] = (uint8_t)((opcode >> (i * 8)) & 0xFF);
+    }
 	err = patch_memory((void *)where, size_of_jump, opcodes);
 #else
 	int offset = (int)(to - where - size_of_jump);
