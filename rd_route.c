@@ -451,3 +451,41 @@ static void* _function_ptr_within_image(const char *function_name, void *macho_i
 
 	return NULL;
 }
+
+unsigned char* read_memory(void *address, mach_msg_type_number_t count) {
+	assert(address);
+	assert(count > 0);
+
+	unsigned char *buffer = malloc(count);
+	if (buffer == NULL) {
+		RDErrorLog("malloc() failed");
+		return NULL;
+	}
+
+	mach_msg_type_number_t actualCount = count;
+	vm_offset_t vmOffset;
+	int kr = 0;
+	kr = mach_vm_read(mach_task_self(), (mach_vm_address_t) address, (mach_vm_size_t) count, &vmOffset, &actualCount);
+	if (kr != KERN_SUCCESS) {
+        RDErrorLog("mach_vm_read() failed with error: 0x%x", kr);
+		free(buffer);
+        return NULL;
+    }
+
+	memcpy(buffer, (const void*)vmOffset, actualCount);
+
+	kr = mach_vm_deallocate(mach_task_self(), vmOffset, (mach_vm_size_t)actualCount);
+	if (kr != KERN_SUCCESS) {
+		RDErrorLog("mach_vm_deallocate() failed with error: 0x%x", kr);
+		free(buffer);
+		return NULL;
+	}
+
+	if (actualCount != count) {
+		RDErrorLog("mach_vm_read() failed due to invalid count");
+		free(buffer);
+		return NULL;
+	}
+
+	return buffer;
+}

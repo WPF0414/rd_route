@@ -67,6 +67,19 @@ int rd_duplicate_function(void *function, void **duplicate);
  */
 int patch_memory(void *address, mach_msg_type_number_t count, uint8_t *new_bytes);
 
+/**
+ * @brief Reads the memory contents from a specified address.
+ *
+ * This function reads the specified number of bytes from the given memory address
+ * in the current Mach-O process. It allocates memory to store the contents and
+ * returns a pointer to the allocated buffer.
+ *
+ * @param address         The memory address to read from.
+ * @param count           The number of bytes to read.
+ * @return unsigned char* A pointer to the buffer containing the read memory, or NULL on failure.
+ */
+unsigned char* read_memory(void *address, mach_msg_type_number_t count);
+
 #ifdef __cplusplus
 	}
 #endif
